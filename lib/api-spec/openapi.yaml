@@ -10,7 +10,120 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: posts
+    description: Blog post operations
 paths:
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List posts
+      description: Returns all posts, most recent first. Optionally filter to published-only.
+      parameters:
+        - name: publishedOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+  /posts/summary:
+    get:
+      operationId: getPostsSummary
+      tags: [posts]
+      summary: Blog summary stats
+      description: Aggregate counts used for a dashboard-style overview.
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostsSummary"
+  /posts/{id}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePost
+      tags: [posts]
+      summary: Update a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Not found
+    delete:
+      operationId: deletePost
+      tags: [posts]
+      summary: Delete a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
   /healthz:
     get:
       operationId: healthCheck
@@ -33,4 +146,89 @@ components:
           type: string
       required:
         - status
+    Post:
+      type: object
+      required:
+        - id
+        - title
+        - slug
+        - content
+        - excerpt
+        - authorName
+        - published
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        authorName:
+          type: string
+        published:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PostInput:
+      type: object
+      required:
+        - title
+        - content
+        - authorName
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        excerpt:
+          type: string
+        authorName:
+          type: string
+          minLength: 1
+        published:
+          type: boolean
+    PostUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        excerpt:
+          type: string
+        authorName:
+          type: string
+          minLength: 1
+        published:
+          type: boolean
+    PostsSummary:
+      type: object
+      required:
+        - totalPosts
+        - publishedCount
+        - draftCount
+        - latestPost
+      properties:
+        totalPosts:
+          type: integer
+        publishedCount:
+          type: integer
+        draftCount:
+          type: integer
+        latestPost:
+          oneOf:
+            - $ref: "#/components/schemas/Post"
+            - type: "null"
 

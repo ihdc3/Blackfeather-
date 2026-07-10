@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --font-mono: var(--app-font-mono);
+  --font-sans: var(--app-font-mono);
+  --font-serif: var(--app-font-mono);
+  --font-body: var(--app-font-mono);
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+}
+
+:root, .dark {
+  --button-outline: rgba(0, 255, 65, 0.2);
+  --badge-outline: rgba(0, 255, 65, 0.1);
+  --opaque-button-border-intensity: 0;
+  
+  /* Hacker Terminal Theme */
+  --background: 0 0% 2%;
+  --foreground: 135 100% 50%;
+  --border: 135 100% 15%;
+  --card: 0 0% 3%;
+  --card-foreground: 135 100% 50%;
+  --card-border: 135 100% 20%;
+  
+  --popover: 0 0% 3%;
+  --popover-foreground: 135 100% 50%;
+  --popover-border: 135 100% 30%;
+  
+  --primary: 135 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  
+  --secondary: 135 100% 10%;
+  --secondary-foreground: 135 100% 50%;
+  
+  --muted: 135 100% 8%;
+  --muted-foreground: 135 100% 35%;
+  
+  --accent: 135 100% 20%;
+  --accent-foreground: 135 100% 50%;
+  
+  --destructive: 0 100% 50%;
+  --destructive-foreground: 0 0% 0%;
+  
+  --input: 135 100% 15%;
+  --ring: 135 100% 50%;
+  
+  --sidebar: 0 0% 3%;
+  --sidebar-foreground: 135 100% 50%;
+  --sidebar-border: 135 100% 15%;
+  --sidebar-primary: 135 100% 50%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 135 100% 10%;
+  --sidebar-accent-foreground: 135 100% 50%;
+  --sidebar-ring: 135 100% 50%;
+
+  --app-font-mono: 'Fira Code', monospace;
+  --radius: 0px; 
+
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-md: none;
+
+  --primary-border: var(--primary);
+  --secondary-border: var(--secondary);
+  --muted-border: var(--muted);
+  --accent-border: var(--accent);
+  --destructive-border: var(--destructive);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-mono antialiased bg-background text-foreground selection:bg-primary selection:text-black;
+  }
+
+  body::after {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 9999;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-mono font-bold tracking-tight text-foreground uppercase;
+  }
+}
+
+@layer utilities {
+  input[type='search']::-webkit-search-cancel-button { @apply hidden; }
+  [contenteditable][data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+  
+  .prose-custom {
+    @apply prose prose-invert max-w-none font-mono;
+    @apply prose-p:font-mono prose-p:text-base prose-p:leading-relaxed prose-p:text-foreground/90;
+    @apply prose-headings:font-mono prose-headings:text-primary prose-headings:font-bold prose-headings:uppercase;
+    @apply prose-a:text-primary prose-a:no-underline hover:prose-a:bg-primary hover:prose-a:text-black;
+    @apply prose-strong:text-primary prose-strong:font-bold;
+    @apply prose-blockquote:font-mono prose-blockquote:border-l-primary prose-blockquote:bg-primary/10 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:not-italic;
+    @apply prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:py-0.5 prose-code:before:content-none prose-code:after:content-none;
+    @apply prose-pre:bg-black prose-pre:border prose-pre:border-primary/30;
+  }
+
+  .cursor-blink::after {
+    content: '█';
+    animation: blink 1s step-end infinite;
+    color: hsl(var(--primary));
+    margin-left: 2px;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Blog"
+version = "1.0.0"
+id = "artifacts/blog"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24722
+
+[services.development]
+run = "pnpm --filter @workspace/blog run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/blog", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/blog/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24722"
+BASE_PATH = "/"
