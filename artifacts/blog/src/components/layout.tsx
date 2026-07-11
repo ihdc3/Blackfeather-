@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Terminal, SquareTerminal, Settings as SettingsIcon, LogIn, LogOut } from "lucide-react";
+import { Terminal, SquareTerminal, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { useGetPostsSummary, useGetSiteSettings } from "@workspace/api-client-react";
 import { Show, useClerk, useUser } from "@clerk/react";
 import { Skeleton } from "./ui/skeleton";
@@ -29,15 +29,8 @@ function AuthControls() {
           <LogOut size={18} />
         </button>
       </Show>
-      <Show when="signed-out">
-        <Link
-          href="/sign-in"
-          className="flex items-center gap-2 text-sm font-bold text-muted-foreground uppercase hover:text-primary"
-        >
-          <LogIn size={16} />
-          <span className="hidden sm:inline">Sign In</span>
-        </Link>
-      </Show>
+      {/* No sign-in link is rendered for signed-out visitors on purpose --
+          the terminal is only reachable by navigating to /sign-in directly. */}
     </>
   );
 }
@@ -76,17 +69,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </span>
                 )}
               </Link>
-              <Link 
-                href="/drafts" 
-                className={`transition-none uppercase hover:text-primary ${isRoute("/drafts") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
-              >
-                ./drafts
-                {summary && !isLoadingSummary && summary.draftCount > 0 && (
-                  <span className="ml-2 text-xs border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-primary">
-                    {summary.draftCount}
-                  </span>
-                )}
-              </Link>
+              <Show when="signed-in">
+                <Link 
+                  href="/drafts" 
+                  className={`transition-none uppercase hover:text-primary ${isRoute("/drafts") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
+                >
+                  ./drafts
+                  {summary && !isLoadingSummary && summary.draftCount > 0 && (
+                    <span className="ml-2 text-xs border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-primary">
+                      {summary.draftCount}
+                    </span>
+                  )}
+                </Link>
+              </Show>
             </div>
 
             <Show when="signed-in">

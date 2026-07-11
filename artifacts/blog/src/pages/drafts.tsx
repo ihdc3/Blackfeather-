@@ -1,6 +1,7 @@
 import { useListPosts } from "@workspace/api-client-react";
 import { PostCard } from "@/components/post-card";
 import { Layout } from "@/components/layout";
+import { RequireSignedIn } from "@/components/require-signed-in";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileCode2, Archive } from "lucide-react";
 import { Link } from "wouter";
@@ -13,6 +14,7 @@ export default function Drafts() {
 
   return (
     <Layout>
+      <RequireSignedIn>
       <div className="mb-12 border-b border-primary/30 pb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2 uppercase flex items-center gap-3">
           <FileCode2 className="text-primary" size={32} />
@@ -76,6 +78,7 @@ export default function Drafts() {
           </section>
         </div>
       )}
+      </RequireSignedIn>
     </Layout>
   );
 }

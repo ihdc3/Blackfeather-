@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { desc, eq } from "drizzle-orm";
 import { db, postsTable } from "@workspace/db";
-import { requireAdmin } from "../middlewares/requireAdmin";
+import { isAdminRequest, requireAdmin } from "../middlewares/requireAdmin";
 import {
   ListPostsQueryParams,
   CreatePostBody,
@@ -52,6 +52,15 @@ router.get("/posts", async (req, res): Promise<void> => {
     return;
   }
 
+  // Only published posts are visible to non-admin requests -- drafts and
+  // archived posts are the owner's private "local buffers" and must never
+  // surface to anyone else, whether filtered by status or listed in full.
+  const isAdmin = await isAdminRequest(req);
+  if (query.data.status && query.data.status !== "published" && !isAdmin) {
+    res.json(ListPostsResponse.parse([]));
+    return;
+  }
+
   const rows = query.data.status
     ? await db
         .select()
@@ -60,22 +69,32 @@ router.get("/posts", async (req, res): Promise<void> => {
         .orderBy(desc(postsTable.createdAt))
     : await db.select().from(postsTable).orderBy(desc(postsTable.createdAt));
 
-  res.json(ListPostsResponse.parse(rows));
+  const visibleRows = isAdmin
+    ? rows
+    : rows.filter((r) => r.status === "published");
+
+  res.json(ListPostsResponse.parse(visibleRows));
 });
 
-router.get("/posts/summary", async (_req, res): Promise<void> => {
+router.get("/posts/summary", async (req, res): Promise<void> => {
   const rows = await db.select().from(postsTable);
+  const isAdmin = await isAdminRequest(req);
   const publishedCount = rows.filter((r) => r.status === "published").length;
-  const draftCount = rows.filter((r) => r.status === "draft").length;
+  const draftCount = isAdmin
+    ? rows.filter((r) => r.status === "draft").length
+    : 0;
+  const visibleRows = isAdmin
+    ? rows
+    : rows.filter((r) => r.status === "published");
   const latestPost =
-    rows
+    visibleRows
       .slice()
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ??
     null;
 
   res.json(
     GetPostsSummaryResponse.parse({
-      totalPosts: rows.length,
+      totalPosts: visibleRows.length,
       publishedCount,
       draftCount,
       latestPost,
@@ -112,7 +131,10 @@ router.get("/posts/:id", async (req, res): Promise<void> => {
     .from(postsTable)
     .where(eq(postsTable.id, params.data.id));
 
-  if (!post) {
+  if (
+    !post ||
+    (post.status !== "published" && !(await isAdminRequest(req)))
+  ) {
     res.status(404).json({ error: "Post not found" });
     return;
   }
