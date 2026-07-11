@@ -9,6 +9,7 @@ import {
   ObjectNotFoundError,
   ObjectStorageService,
 } from '../lib/objectStorage';
+import { requireAdmin } from '../middlewares/requireAdmin';
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -20,11 +21,12 @@ const objectStorageService = new ObjectStorageService();
  * The client sends JSON metadata (name, size, contentType) — NOT the file.
  * Then uploads the file directly to the returned presigned URL.
  *
- * Note: this app has no user accounts (single-author blog), so this endpoint
- * is intentionally left open rather than gated behind auth.
+ * Restricted to the site owner (see requireAdmin) since uploads are only
+ * used to decorate posts/site settings, which are also owner-only.
  */
 router.post(
   '/storage/uploads/request-url',
+  requireAdmin,
   async (req: Request, res: Response) => {
     const parsed = RequestUploadUrlBody.safeParse(req.body);
     if (!parsed.success) {

@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { useCreatePost } from "@workspace/api-client-react";
 import { PostEditor } from "@/components/post-editor";
 import { Layout } from "@/components/layout";
+import { RequireSignedIn } from "@/components/require-signed-in";
 import { useToast } from "@/hooks/use-toast";
 import type { PostInput } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,10 +35,13 @@ export default function NewPost() {
           setLocation("/drafts");
         }
       },
-      onError: () => {
+      onError: (error: any) => {
+        const status = error?.response?.status ?? error?.status;
         toast({
-          title: "ERROR: WRITE_FAILED",
-          description: "Permission denied or storage limit exceeded.",
+          title: status === 401 || status === 403 ? "ERROR: ACCESS_DENIED" : "ERROR: WRITE_FAILED",
+          description: status === 401 || status === 403
+            ? "This account is not authorized to write records."
+            : "Permission denied or storage limit exceeded.",
           variant: "destructive",
         });
       }
@@ -46,11 +50,13 @@ export default function NewPost() {
 
   return (
     <Layout>
-      <PostEditor
-        title="NEW_BUFFER"
-        onSave={handleSave}
-        isSaving={createPost.isPending}
-      />
+      <RequireSignedIn>
+        <PostEditor
+          title="NEW_BUFFER"
+          onSave={handleSave}
+          isSaving={createPost.isPending}
+        />
+      </RequireSignedIn>
     </Layout>
   );
 }

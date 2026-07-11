@@ -2,6 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useUpdatePost, useListPosts, useGetPost } from "@workspace/api-client-react";
 import { PostEditor } from "@/components/post-editor";
 import { Layout } from "@/components/layout";
+import { RequireSignedIn } from "@/components/require-signed-in";
 import { useToast } from "@/hooks/use-toast";
 import type { PostInput } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,10 +51,13 @@ export default function EditPost() {
           setLocation("/drafts");
         }
       },
-      onError: () => {
+      onError: (error: any) => {
+        const status = error?.response?.status ?? error?.status;
         toast({
-          title: "ERROR: UPDATE_FAILED",
-          description: "Database write error. Check your connection.",
+          title: status === 401 || status === 403 ? "ERROR: ACCESS_DENIED" : "ERROR: UPDATE_FAILED",
+          description: status === 401 || status === 403
+            ? "This account is not authorized to write records."
+            : "Database write error. Check your connection.",
           variant: "destructive",
         });
       }
@@ -91,15 +95,17 @@ export default function EditPost() {
 
   return (
     <Layout>
-      <PostEditor
-        title={`EDIT_BUFFER: ${displayPost.slug}`}
-        initialData={{
-          ...displayPost,
-          coverImageUrl: displayPost.coverImageUrl || null,
-        }}
-        onSave={handleSave}
-        isSaving={updatePost.isPending}
-      />
+      <RequireSignedIn>
+        <PostEditor
+          title={`EDIT_BUFFER: ${displayPost.slug}`}
+          initialData={{
+            ...displayPost,
+            coverImageUrl: displayPost.coverImageUrl || null,
+          }}
+          onSave={handleSave}
+          isSaving={updatePost.isPending}
+        />
+      </RequireSignedIn>
     </Layout>
   );
 }

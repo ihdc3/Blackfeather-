@@ -1,0 +1,1 @@
+- [Single-owner admin gating with Clerk](single-owner-admin-gating.md) — pattern for "only I can edit" apps: Clerk sign-in + ADMIN_EMAIL env var checked server-side, not multi-role RBAC.

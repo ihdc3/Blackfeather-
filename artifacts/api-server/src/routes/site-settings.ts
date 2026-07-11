@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, siteSettingsTable } from "@workspace/db";
+import { requireAdmin } from "../middlewares/requireAdmin";
 import {
   GetSiteSettingsResponse,
   UpdateSiteSettingsBody,
@@ -32,7 +33,7 @@ router.get("/site-settings", async (_req, res): Promise<void> => {
   res.json(GetSiteSettingsResponse.parse(settings));
 });
 
-router.patch("/site-settings", async (req, res): Promise<void> => {
+router.patch("/site-settings", requireAdmin, async (req, res): Promise<void> => {
   const parsed = UpdateSiteSettingsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

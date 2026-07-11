@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Layout } from "@/components/layout";
+import { RequireSignedIn } from "@/components/require-signed-in";
 import { useGetSiteSettings, useUpdateSiteSettings } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +100,7 @@ export default function Settings() {
 
   return (
     <Layout>
+      <RequireSignedIn>
       <div className="max-w-2xl mx-auto w-full pb-16">
         <div className="mb-12 border-b border-primary/30 pb-6">
           <h1 className="text-3xl font-bold text-primary mb-2 uppercase flex items-center gap-3">
@@ -181,6 +183,7 @@ export default function Settings() {
           </section>
         </div>
       </div>
+      </RequireSignedIn>
     </Layout>
   );
 }

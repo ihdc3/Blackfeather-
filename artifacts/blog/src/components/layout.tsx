@@ -1,8 +1,46 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Terminal, SquareTerminal, Settings as SettingsIcon } from "lucide-react";
+import { Terminal, SquareTerminal, Settings as SettingsIcon, LogIn, LogOut } from "lucide-react";
 import { useGetPostsSummary, useGetSiteSettings } from "@workspace/api-client-react";
+import { Show, useClerk, useUser } from "@clerk/react";
 import { Skeleton } from "./ui/skeleton";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function AuthControls() {
+  const { signOut } = useClerk();
+  const { user } = useUser();
+
+  return (
+    <>
+      <Show when="signed-in">
+        <span
+          className="hidden lg:inline text-[10px] text-muted-foreground uppercase truncate max-w-[140px]"
+          title={user?.primaryEmailAddress?.emailAddress}
+        >
+          {user?.primaryEmailAddress?.emailAddress}
+        </span>
+        <button
+          type="button"
+          onClick={() => signOut({ redirectUrl: basePath || "/" })}
+          className="flex items-center justify-center w-8 h-8 transition-none text-muted-foreground hover:text-primary"
+          title="Sign out"
+        >
+          <LogOut size={18} />
+        </button>
+      </Show>
+      <Show when="signed-out">
+        <Link
+          href="/sign-in"
+          className="flex items-center gap-2 text-sm font-bold text-muted-foreground uppercase hover:text-primary"
+        >
+          <LogIn size={16} />
+          <span className="hidden sm:inline">Sign In</span>
+        </Link>
+      </Show>
+    </>
+  );
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -51,21 +89,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
 
-            <Link 
-              href="/settings" 
-              className={`flex items-center justify-center w-8 h-8 transition-none hover:text-primary ${isRoute("/settings") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
-              title="Settings"
-            >
-              <SettingsIcon size={18} />
-            </Link>
+            <Show when="signed-in">
+              <Link 
+                href="/settings" 
+                className={`flex items-center justify-center w-8 h-8 transition-none hover:text-primary ${isRoute("/settings") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
+                title="Settings"
+              >
+                <SettingsIcon size={18} />
+              </Link>
 
-            <Link 
-              href="/new" 
-              className="flex items-center gap-2 text-sm font-bold bg-primary text-black px-4 py-1.5 uppercase hover:bg-primary/80 transition-none active:scale-95"
-            >
-              <SquareTerminal size={16} />
-              <span className="hidden sm:inline">Write</span>
-            </Link>
+              <Link 
+                href="/new" 
+                className="flex items-center gap-2 text-sm font-bold bg-primary text-black px-4 py-1.5 uppercase hover:bg-primary/80 transition-none active:scale-95"
+              >
+                <SquareTerminal size={16} />
+                <span className="hidden sm:inline">Write</span>
+              </Link>
+            </Show>
+
+            <AuthControls />
           </nav>
         </div>
       </header>
