@@ -1,4 +1,4 @@
-import { useListPosts } from "@workspace/api-client-react";
+import { useListPosts, useGetSiteSettings } from "@workspace/api-client-react";
 import { PostCard } from "@/components/post-card";
 import { Layout } from "@/components/layout";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,10 +6,22 @@ import { TerminalSquare } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
-  const { data: posts, isLoading } = useListPosts({ publishedOnly: true });
+  const { data: posts, isLoading } = useListPosts({ status: "published" });
+  const { data: settings } = useGetSiteSettings();
 
   return (
     <Layout>
+      {settings?.bannerImageUrl && (
+        <div className="mb-8 w-full border border-primary/30 relative group">
+          <div className="absolute inset-0 bg-primary/20 pointer-events-none mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 z-10"></div>
+          <img 
+            src={`/api/storage${settings.bannerImageUrl}`} 
+            alt="Global Banner" 
+            className="w-full h-auto object-cover max-h-48 md:max-h-64 filter grayscale group-hover:grayscale-0 transition-all duration-500" 
+          />
+        </div>
+      )}
+
       <div className="mb-12 md:mb-16 border-b border-primary/30 pb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2 uppercase flex items-center gap-3">
           <TerminalSquare className="text-primary" size={32} />

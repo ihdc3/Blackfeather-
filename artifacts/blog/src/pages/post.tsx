@@ -2,7 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useListPosts, useGetPost, useDeletePost } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { format } from "date-fns";
-import { ChevronLeft, Edit2, Trash2, Terminal } from "lucide-react";
+import { ChevronLeft, Edit2, Trash2, Terminal, Lock, Unlock, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,19 +26,15 @@ export default function PostView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // First get all posts to find the matching ID for this slug
-  // The API doesn't support getPostBySlug, so we have to do this lookup
   const { data: posts, isLoading: isLoadingPosts } = useListPosts();
   
   const postInfo = posts?.find(p => p.slug === params?.slug);
   const postId = postInfo?.id;
 
-  // Then fetch the full post by ID (even though listPosts returns full content,
-  // we follow the pattern of fetching the specific resource)
   const { data: post, isLoading: isLoadingPost } = useGetPost(postId as number, { 
     query: { 
       enabled: !!postId,
-      queryKey: ["getPost", postId] // Using string key since generated helper needs to be imported if available
+      queryKey: ["getPost", postId]
     } 
   });
 
@@ -88,7 +84,6 @@ export default function PostView() {
     );
   }
 
-  // Use either the specific post fetch or fallback to list item
   const displayPost = post || postInfo;
 
   return (
@@ -110,23 +105,42 @@ export default function PostView() {
             </div>
           ) : displayPost ? (
             <article className="border border-primary/20 bg-black p-6 md:p-8 relative">
-              <div className="absolute top-0 left-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 border-b border-r border-primary/20 flex items-center gap-2 font-bold">
+              <div className="absolute top-0 left-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 border-b border-r border-primary/20 flex items-center gap-2 font-bold uppercase">
                 <Terminal size={10} />
                 VIEWER: {displayPost.slug}.log
               </div>
 
               <header className="mb-10 mt-4 border-b border-primary/30 pb-8">
+                {displayPost.coverImageUrl && (
+                  <div className="mb-8 border border-primary/30 w-full relative">
+                    <div className="absolute inset-0 bg-primary/10 pointer-events-none mix-blend-overlay"></div>
+                    <img src={`/api/storage${displayPost.coverImageUrl}`} alt="Cover" className="w-full h-auto object-cover max-h-[400px] filter grayscale" />
+                  </div>
+                )}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div className="flex flex-wrap items-center gap-3 text-xs text-primary/70 font-bold uppercase tracking-widest">
                     <span>&gt; TIMESTAMP:</span>
                     <time dateTime={displayPost.createdAt}>
                       {format(new Date(displayPost.createdAt), "yyyy-MM-dd HH:mm:ss")}
                     </time>
-                    {!displayPost.published && (
-                      <span className="text-black bg-primary px-1.5 py-0.5 border border-primary">
-                        [UNPUBLISHED]
-                      </span>
-                    )}
+                    
+                    <span className={`px-1.5 py-0.5 border ${
+                      displayPost.status === 'published' ? 'text-black bg-primary border-primary' : 
+                      displayPost.status === 'archived' ? 'text-muted-foreground border-muted-foreground' : 
+                      'text-primary border-primary'
+                    }`}>
+                      [{displayPost.status.toUpperCase()}]
+                    </span>
+
+                    <span className={`flex items-center gap-1 px-1.5 py-0.5 border ${
+                      displayPost.encryptionLevel === 'classified' ? 'text-destructive border-destructive bg-destructive/10' :
+                      displayPost.encryptionLevel === 'encrypted' ? 'text-amber-500 border-amber-500 bg-amber-500/10' :
+                      'text-primary border-primary bg-primary/10'
+                    }`}>
+                      {displayPost.encryptionLevel === 'classified' ? <ShieldAlert size={10} /> :
+                       displayPost.encryptionLevel === 'encrypted' ? <Lock size={10} /> : <Unlock size={10} />}
+                      {displayPost.encryptionLevel.toUpperCase()}
+                    </span>
                   </div>
                   
                   <div className="flex items-center gap-2">
@@ -166,11 +180,11 @@ export default function PostView() {
                   {displayPost.title}
                 </h1>
                 
-                <div className="flex items-center gap-4 text-xs font-bold uppercase text-primary/70 mt-6 bg-primary/5 p-3 border border-primary/10 inline-flex">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 text-xs font-bold uppercase text-primary/70 mt-6 bg-primary/5 p-3 border border-primary/10">
                   <span>USER_ID: {displayPost.authorName}</span>
                   {displayPost.excerpt && (
                     <>
-                      <span className="text-primary/30">|</span>
+                      <span className="hidden md:inline text-primary/30">|</span>
                       <span>SUMMARY: {displayPost.excerpt}</span>
                     </>
                   )}

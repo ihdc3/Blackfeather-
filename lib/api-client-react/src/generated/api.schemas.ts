@@ -9,6 +9,30 @@ export interface HealthStatus {
   status: string;
 }
 
+/**
+ * Publication status of a post.
+ */
+export type PostStatus = typeof PostStatus[keyof typeof PostStatus];
+
+
+export const PostStatus = {
+  draft: 'draft',
+  published: 'published',
+  archived: 'archived',
+} as const;
+
+/**
+ * Decorative security classification shown on the post (terminal theme flavor, not real encryption).
+ */
+export type EncryptionLevel = typeof EncryptionLevel[keyof typeof EncryptionLevel];
+
+
+export const EncryptionLevel = {
+  plaintext: 'plaintext',
+  encrypted: 'encrypted',
+  classified: 'classified',
+} as const;
+
 export interface Post {
   id: number;
   title: string;
@@ -16,7 +40,10 @@ export interface Post {
   content: string;
   excerpt: string;
   authorName: string;
-  published: boolean;
+  status: PostStatus;
+  encryptionLevel: EncryptionLevel;
+  /** @nullable */
+  coverImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,7 +55,10 @@ export interface PostInput {
   excerpt?: string;
   /** @minLength 1 */
   authorName: string;
-  published?: boolean;
+  status?: PostStatus;
+  encryptionLevel?: EncryptionLevel;
+  /** @nullable */
+  coverImageUrl?: string | null;
 }
 
 export interface PostUpdate {
@@ -38,7 +68,10 @@ export interface PostUpdate {
   excerpt?: string;
   /** @minLength 1 */
   authorName?: string;
-  published?: boolean;
+  status?: PostStatus;
+  encryptionLevel?: EncryptionLevel;
+  /** @nullable */
+  coverImageUrl?: string | null;
 }
 
 export interface PostsSummary {
@@ -48,7 +81,52 @@ export interface PostsSummary {
   latestPost: Post | null;
 }
 
+export interface SiteSettings {
+  id: number;
+  title: string;
+  /** @nullable */
+  bannerImageUrl: string | null;
+  updatedAt: string;
+}
+
+export interface SiteSettingsUpdate {
+  /** @minLength 1 */
+  title?: string;
+  /** @nullable */
+  bannerImageUrl?: string | null;
+}
+
+export interface UploadUrlRequest {
+  /**
+     * Original file name.
+     * @minLength 1
+     */
+  name: string;
+  /**
+     * File size in bytes.
+     * @minimum 1
+     */
+  size: number;
+  /**
+     * MIME type of the file (e.g. `image/jpeg`).
+     * @minLength 1
+     */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  /** Presigned GCS URL for PUT upload. */
+  uploadURL: string;
+  /** Normalized object path (e.g. `/objects/uploads/uuid`). Store this in your database. */
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
+}
+
 export type ListPostsParams = {
-publishedOnly?: boolean;
+status?: PostStatus;
 };
 

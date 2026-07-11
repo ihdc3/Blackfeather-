@@ -9,11 +9,97 @@ import * as zod from 'zod';
 
 
 /**
- * Returns all posts, most recent first. Optionally filter to published-only.
+ * Returns the site's title and banner image.
+ * @summary Get site settings
+ */
+export const GetSiteSettingsResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "bannerImageUrl": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update site settings
+ */
+
+
+
+export const UpdateSiteSettingsBody = zod.object({
+  "title": zod.string().min(1).optional(),
+  "bannerImageUrl": zod.string().nullish()
+})
+
+export const UpdateSiteSettingsResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "bannerImageUrl": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * Returns a presigned GCS URL for direct upload. The client sends JSON
+ * metadata here, then uploads the file directly to the returned URL.
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file (e.g. `image\/jpeg`).')
+})
+
+
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().describe('Presigned GCS URL for PUT upload.'),
+  "objectPath": zod.string().describe('Normalized object path (e.g. `\/objects\/uploads\/uuid`). Store this in your database.'),
+  "metadata": zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file (e.g. `image\/jpeg`).')
+}).optional()
+})
+
+
+/**
+ * Unconditionally public — no authentication or ACL checks.
+ * Searches PUBLIC_OBJECT_SEARCH_PATHS for the given file path.
+ * @summary Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+ */
+export const GetPublicObjectParams = zod.object({
+  "filePath": zod.coerce.string().describe('Relative file path within the public search paths.')
+})
+
+export const GetPublicObjectResponse = zod.unknown()
+
+
+/**
+ * Serves object entities uploaded via presigned URLs.
+ * @summary Serve an object entity from PRIVATE_OBJECT_DIR
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string().describe('Object path within the private object dir (e.g. `uploads\/some-uuid`).')
+})
+
+export const GetStorageObjectResponse = zod.unknown()
+
+
+/**
+ * Returns all posts, most recent first. Optionally filter by status.
  * @summary List posts
  */
 export const ListPostsQueryParams = zod.object({
-  "publishedOnly": zod.coerce.boolean().optional()
+  "status": zod.enum(['draft', 'published', 'archived']).optional()
 })
 
 export const ListPostsResponseItem = zod.object({
@@ -23,7 +109,9 @@ export const ListPostsResponseItem = zod.object({
   "content": zod.string(),
   "excerpt": zod.string(),
   "authorName": zod.string(),
-  "published": zod.boolean(),
+  "status": zod.enum(['draft', 'published', 'archived']).describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -42,7 +130,9 @@ export const CreatePostBody = zod.object({
   "content": zod.string(),
   "excerpt": zod.string().optional(),
   "authorName": zod.string().min(1),
-  "published": zod.boolean().optional()
+  "status": zod.enum(['draft', 'published', 'archived']).optional().describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).optional().describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullish()
 })
 
 export const CreatePostResponse = zod.object({
@@ -52,7 +142,9 @@ export const CreatePostResponse = zod.object({
   "content": zod.string(),
   "excerpt": zod.string(),
   "authorName": zod.string(),
-  "published": zod.boolean(),
+  "status": zod.enum(['draft', 'published', 'archived']).describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -73,7 +165,9 @@ export const GetPostsSummaryResponse = zod.object({
   "content": zod.string(),
   "excerpt": zod.string(),
   "authorName": zod.string(),
-  "published": zod.boolean(),
+  "status": zod.enum(['draft', 'published', 'archived']).describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }),zod.null()])
@@ -94,7 +188,9 @@ export const GetPostResponse = zod.object({
   "content": zod.string(),
   "excerpt": zod.string(),
   "authorName": zod.string(),
-  "published": zod.boolean(),
+  "status": zod.enum(['draft', 'published', 'archived']).describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -116,7 +212,9 @@ export const UpdatePostBody = zod.object({
   "content": zod.string().optional(),
   "excerpt": zod.string().optional(),
   "authorName": zod.string().min(1).optional(),
-  "published": zod.boolean().optional()
+  "status": zod.enum(['draft', 'published', 'archived']).optional().describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).optional().describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullish()
 })
 
 export const UpdatePostResponse = zod.object({
@@ -126,7 +224,9 @@ export const UpdatePostResponse = zod.object({
   "content": zod.string(),
   "excerpt": zod.string(),
   "authorName": zod.string(),
-  "published": zod.boolean(),
+  "status": zod.enum(['draft', 'published', 'archived']).describe('Publication status of a post.'),
+  "encryptionLevel": zod.enum(['plaintext', 'encrypted', 'classified']).describe('Decorative security classification shown on the post (terminal theme flavor, not real encryption).'),
+  "coverImageUrl": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

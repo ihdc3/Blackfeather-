@@ -5,8 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { PostStatus } from './postStatus';
 
-export type ListPostsParams = {
-status?: PostStatus;
-};
+export interface ErrorEnvelope {
+  error: string;
+}

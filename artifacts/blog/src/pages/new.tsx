@@ -17,8 +17,8 @@ export default function NewPost() {
     createPost.mutate({ data }, {
       onSuccess: (post) => {
         toast({
-          title: data.published ? "SUCCESS: RECORD_PUBLISHED" : "SUCCESS: BUFFER_SAVED",
-          description: data.published 
+          title: data.status === "published" ? "SUCCESS: RECORD_PUBLISHED" : "SUCCESS: BUFFER_SAVED",
+          description: data.status === "published"
             ? "Data block successfully written to public database." 
             : "Local buffer saved. Awaiting commit.",
         });
@@ -28,7 +28,7 @@ export default function NewPost() {
         queryClient.invalidateQueries({ queryKey: getGetPostsSummaryQueryKey() });
         
         // Redirect
-        if (data.published) {
+        if (data.status === "published") {
           setLocation(`/posts/${post.slug}`);
         } else {
           setLocation("/drafts");

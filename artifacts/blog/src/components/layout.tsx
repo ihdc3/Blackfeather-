@@ -1,13 +1,20 @@
+import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Terminal, SquareTerminal } from "lucide-react";
-import { useGetPostsSummary } from "@workspace/api-client-react";
+import { Terminal, SquareTerminal, Settings as SettingsIcon } from "lucide-react";
+import { useGetPostsSummary, useGetSiteSettings } from "@workspace/api-client-react";
 import { Skeleton } from "./ui/skeleton";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { data: summary, isLoading } = useGetPostsSummary();
+  const { data: summary, isLoading: isLoadingSummary } = useGetPostsSummary();
+  const { data: settings, isLoading: isLoadingSettings } = useGetSiteSettings();
 
   const isRoute = (path: string) => location === path;
+  const siteTitle = settings?.title || "Journal";
+
+  useEffect(() => {
+    document.title = siteTitle;
+  }, [siteTitle]);
 
   return (
     <div className="min-h-[100dvh] flex flex-col selection:bg-primary selection:text-black">
@@ -15,17 +22,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 md:px-8 max-w-5xl h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group hover:text-primary transition-none">
             <Terminal size={18} className="text-primary" />
-            <span className="font-mono font-bold tracking-tight text-lg">sysadmin@journal:~$</span>
+            <span className="font-mono font-bold tracking-tight text-lg cursor-blink">{siteTitle}</span>
           </Link>
 
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-4 md:gap-6">
             <div className="hidden md:flex items-center gap-6 text-sm font-bold mr-4">
               <Link 
                 href="/" 
                 className={`transition-none uppercase hover:text-primary ${isRoute("/") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
               >
                 ./published
-                {summary && !isLoading && (
+                {summary && !isLoadingSummary && (
                   <span className="ml-2 text-xs border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-primary">
                     {summary.publishedCount}
                   </span>
@@ -36,13 +43,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 className={`transition-none uppercase hover:text-primary ${isRoute("/drafts") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
               >
                 ./drafts
-                {summary && !isLoading && summary.draftCount > 0 && (
+                {summary && !isLoadingSummary && summary.draftCount > 0 && (
                   <span className="ml-2 text-xs border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-primary">
                     {summary.draftCount}
                   </span>
                 )}
               </Link>
             </div>
+
+            <Link 
+              href="/settings" 
+              className={`flex items-center justify-center w-8 h-8 transition-none hover:text-primary ${isRoute("/settings") ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}
+              title="Settings"
+            >
+              <SettingsIcon size={18} />
+            </Link>
 
             <Link 
               href="/new" 
@@ -66,7 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             SYSTEM ONLINE
           </p>
           <div className="flex gap-4">
-            {isLoading ? (
+            {isLoadingSummary ? (
               <Skeleton className="w-24 h-4 bg-primary/20" />
             ) : summary ? (
               <span>DB_RECORDS: {summary.totalPosts}</span>

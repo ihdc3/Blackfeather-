@@ -14,12 +14,10 @@ export default function EditPost() {
   const updatePost = useUpdatePost();
   const queryClient = useQueryClient();
 
-  // Find post ID by slug
   const { data: posts, isLoading: isLoadingPosts } = useListPosts();
   const postInfo = posts?.find(p => p.slug === params?.slug);
   const postId = postInfo?.id;
 
-  // Fetch full post
   const { data: post, isLoading: isLoadingPost } = useGetPost(postId as number, { 
     query: { 
       enabled: !!postId,
@@ -37,7 +35,7 @@ export default function EditPost() {
       onSuccess: (updatedPost) => {
         toast({
           title: "SUCCESS: RECORD_UPDATED",
-          description: data.published 
+          description: data.status === "published"
             ? "Modifications committed to public database." 
             : "Local buffer updated successfully.",
         });
@@ -46,7 +44,7 @@ export default function EditPost() {
         queryClient.invalidateQueries({ queryKey: getGetPostsSummaryQueryKey() });
         queryClient.invalidateQueries({ queryKey: ["getPost", postId] });
         
-        if (data.published) {
+        if (data.status === "published") {
           setLocation(`/posts/${updatedPost.slug}`);
         } else {
           setLocation("/drafts");
@@ -95,7 +93,10 @@ export default function EditPost() {
     <Layout>
       <PostEditor
         title={`EDIT_BUFFER: ${displayPost.slug}`}
-        initialData={displayPost}
+        initialData={{
+          ...displayPost,
+          coverImageUrl: displayPost.coverImageUrl || null,
+        }}
         onSave={handleSave}
         isSaving={updatePost.isPending}
       />

@@ -5,6 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EncryptionLevel } from './encryptionLevel';
+import type { PostStatus } from './postStatus';
 
 export interface PostInput {
   /** @minLength 1 */
@@ -13,5 +15,8 @@ export interface PostInput {
   excerpt?: string;
   /** @minLength 1 */
   authorName: string;
-  published?: boolean;
+  status?: PostStatus;
+  encryptionLevel?: EncryptionLevel;
+  /** @nullable */
+  coverImageUrl?: string | null;
 }

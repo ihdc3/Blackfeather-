@@ -51,11 +51,11 @@ router.get("/posts", async (req, res): Promise<void> => {
     return;
   }
 
-  const rows = query.data.publishedOnly
+  const rows = query.data.status
     ? await db
         .select()
         .from(postsTable)
-        .where(eq(postsTable.published, true))
+        .where(eq(postsTable.status, query.data.status))
         .orderBy(desc(postsTable.createdAt))
     : await db.select().from(postsTable).orderBy(desc(postsTable.createdAt));
 
@@ -64,8 +64,8 @@ router.get("/posts", async (req, res): Promise<void> => {
 
 router.get("/posts/summary", async (_req, res): Promise<void> => {
   const rows = await db.select().from(postsTable);
-  const publishedCount = rows.filter((r) => r.published).length;
-  const draftCount = rows.length - publishedCount;
+  const publishedCount = rows.filter((r) => r.status === "published").length;
+  const draftCount = rows.filter((r) => r.status === "draft").length;
   const latestPost =
     rows
       .slice()

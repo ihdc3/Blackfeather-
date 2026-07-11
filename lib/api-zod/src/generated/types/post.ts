@@ -5,6 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EncryptionLevel } from './encryptionLevel';
+import type { PostStatus } from './postStatus';
 
 export interface Post {
   id: number;
@@ -13,7 +15,10 @@ export interface Post {
   content: string;
   excerpt: string;
   authorName: string;
-  published: boolean;
+  status: PostStatus;
+  encryptionLevel: EncryptionLevel;
+  /** @nullable */
+  coverImageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
