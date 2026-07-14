@@ -4,6 +4,7 @@ import { Layout } from "@/components/layout";
 import { format } from "date-fns";
 import { ChevronLeft, Edit2, Trash2, Terminal, Lock, Unlock, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -39,6 +40,7 @@ export default function PostView() {
   });
 
   const deletePost = useDeletePost();
+  const { isAdmin } = useIsAdmin();
 
   const handleDelete = () => {
     if (!postId) return;
@@ -143,37 +145,39 @@ export default function PostView() {
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" asChild className="rounded-none border-primary/50 text-primary hover:bg-primary/20 hover:text-primary uppercase text-xs font-bold h-8">
-                      <Link href={`/posts/${displayPost.slug}/edit`}>
-                        <Edit2 size={14} className="mr-2" />
-                        EDIT
-                      </Link>
-                    </Button>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="rounded-none border-destructive/50 text-destructive hover:bg-destructive/20 hover:text-destructive uppercase text-xs font-bold h-8 px-3">
-                          <Trash2 size={14} />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-none border-primary bg-black">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="font-mono text-xl font-bold uppercase text-primary border-b border-primary/30 pb-2 mb-2">CONFIRM_PURGE</AlertDialogTitle>
-                          <AlertDialogDescription className="font-mono text-sm text-primary/70 uppercase">
-                            WARNING: This action is irreversible. The record "{displayPost.title}" will be permanently erased.
-                            Proceed with deletion?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-6 border-t border-primary/30 pt-4">
-                          <AlertDialogCancel className="rounded-none border-primary/50 text-primary hover:bg-primary/20 hover:text-primary uppercase text-xs font-bold">ABORT</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDelete} className="rounded-none bg-destructive text-black hover:bg-destructive/80 uppercase text-xs font-bold">
-                            {deletePost.isPending ? "EXECUTING..." : "EXECUTE_PURGE"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" asChild className="rounded-none border-primary/50 text-primary hover:bg-primary/20 hover:text-primary uppercase text-xs font-bold h-8">
+                        <Link href={`/posts/${displayPost.slug}/edit`}>
+                          <Edit2 size={14} className="mr-2" />
+                          EDIT
+                        </Link>
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="rounded-none border-destructive/50 text-destructive hover:bg-destructive/20 hover:text-destructive uppercase text-xs font-bold h-8 px-3">
+                            <Trash2 size={14} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="rounded-none border-primary bg-black">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="font-mono text-xl font-bold uppercase text-primary border-b border-primary/30 pb-2 mb-2">CONFIRM_PURGE</AlertDialogTitle>
+                            <AlertDialogDescription className="font-mono text-sm text-primary/70 uppercase">
+                              WARNING: This action is irreversible. The record "{displayPost.title}" will be permanently erased.
+                              Proceed with deletion?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter className="mt-6 border-t border-primary/30 pt-4">
+                            <AlertDialogCancel className="rounded-none border-primary/50 text-primary hover:bg-primary/20 hover:text-primary uppercase text-xs font-bold">ABORT</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete} className="rounded-none bg-destructive text-black hover:bg-destructive/80 uppercase text-xs font-bold">
+                              {deletePost.isPending ? "EXECUTING..." : "EXECUTE_PURGE"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
                 </div>
                 
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-6 uppercase">

@@ -9,6 +9,20 @@ import * as zod from 'zod';
 
 
 /**
+ * Returns whether the current request is signed in, and whether the
+ * signed-in user is the single admin/owner account. Used by the
+ * frontend to decide whether to show owner-only controls (write,
+ * edit, delete, settings) -- the real enforcement always happens
+ * server-side on the write endpoints themselves.
+ * @summary Get current auth identity
+ */
+export const GetAuthMeResponse = zod.object({
+  "isSignedIn": zod.boolean(),
+  "isAdmin": zod.boolean().describe('True only for the single owner account identified by ADMIN_EMAIL.')
+})
+
+
+/**
  * Returns the site's title and banner image.
  * @summary Get site settings
  */

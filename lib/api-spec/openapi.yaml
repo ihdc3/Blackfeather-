@@ -16,7 +16,27 @@ tags:
     description: Site-wide settings (title, banner)
   - name: Storage
     description: Object storage upload and serving endpoints.
+  - name: auth
+    description: Authentication/identity operations.
 paths:
+  /auth/me:
+    get:
+      operationId: getAuthMe
+      tags: [auth]
+      summary: Get current auth identity
+      description: |
+        Returns whether the current request is signed in, and whether the
+        signed-in user is the single admin/owner account. Used by the
+        frontend to decide whether to show owner-only controls (write,
+        edit, delete, settings) -- the real enforcement always happens
+        server-side on the write endpoints themselves.
+      responses:
+        "200":
+          description: Current auth identity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthIdentity"
   /site-settings:
     get:
       operationId: getSiteSettings
@@ -275,6 +295,17 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    AuthIdentity:
+      type: object
+      required:
+        - isSignedIn
+        - isAdmin
+      properties:
+        isSignedIn:
+          type: boolean
+        isAdmin:
+          type: boolean
+          description: True only for the single owner account identified by ADMIN_EMAIL.
     HealthStatus:
       type: object
       properties:

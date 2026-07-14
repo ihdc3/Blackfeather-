@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './authIdentity';
 export * from './encryptionLevel';
 export * from './errorEnvelope';
 export * from './healthStatus';

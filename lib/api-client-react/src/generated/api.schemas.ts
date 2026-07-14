@@ -5,6 +5,12 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AuthIdentity {
+  isSignedIn: boolean;
+  /** True only for the single owner account identified by ADMIN_EMAIL. */
+  isAdmin: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }
