@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
-
+const basePath = process.env.BASE_PATH || '/';
 export default defineConfig({
   base: basePath,
   plugins: [
